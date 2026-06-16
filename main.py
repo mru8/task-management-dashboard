@@ -21,7 +21,7 @@ class TaskDB(Base):
 Base.metadata.create_all(bind=engine) #actually creates the table in the database
 
 #pydantic schema - validates incoming data
-class Task(BaseModel):
+class TaskCreate(BaseModel):
     title: str
     description: str
     priority: str
@@ -33,17 +33,25 @@ app = FastAPI()
 @app.post("/tasks")
 def create_task(task: TaskCreate):
     db = SessionLocal()
-    new_task = TaskDB(
-        title = task.title,
-        description = task.description,
-        priority = task.priority
-    )
-    db.add(new_task)
-    db.commit()
-    return {"message": "Task created successfully"}
+    try:
+        new_task = TaskDB(
+            title = task.title,
+            description = task.description,
+            priority = task.priority
+        )
+        db.add(new_task)
+        db.commit()
+        return {"message": "Task created successfully"}
+    finally:
+        db.close()
 
 @app.get("/tasks")
 def get_tasks():
     db = SessionLocal()
-    tasks = db.query(TaskDB).all()
-    return tasks
+    # tasks = db.query(TaskDB).all()
+    # return tasks
+    try:
+        tasks = db.query(TaskDB).all()
+        return tasks
+    finally:
+        db.close()
