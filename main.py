@@ -1,14 +1,15 @@
 from fastapi import FastAPI
 from pydantic import BaseModel
 from sqlalchemy import create_engine, Column, Integer, String
-from sqlalchemy.ext.declarative import declarative_base
+from sqlalchemy.orm import DeclarativeBase
 from sqlalchemy.orm import sessionmaker
 
+class Base(DeclarativeBase):
+    pass
 #database setup - create/connect to database
 DATABASE_URL = "sqlite:///./test.db"
 engine = create_engine(DATABASE_URL)
 SessionLocal = sessionmaker(bind=engine)
-Base = declarative_base()
 
 #database model - what the table will look like
 class TaskDB(Base):
@@ -42,6 +43,9 @@ def create_task(task: TaskCreate):
         db.add(new_task)
         db.commit()
         return {"message": "Task created successfully"}
+    except Exception:
+        db.rollback()
+        raise
     finally:
         db.close()
 
