@@ -41,7 +41,6 @@ def get_db():
 #your routes
 @app.post("/tasks")
 def create_task(task: TaskCreate, db: Session = Depends(get_db)):
-    db = SessionLocal()
     try:
         new_task = TaskDB(
             title = task.title,
@@ -59,7 +58,6 @@ def create_task(task: TaskCreate, db: Session = Depends(get_db)):
 
 @app.get("/tasks")
 def get_tasks(db: Session = Depends(get_db)):
-    db = SessionLocal()
     # tasks = db.query(TaskDB).all()
     # return tasks
     try:
