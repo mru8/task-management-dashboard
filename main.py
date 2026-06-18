@@ -1,8 +1,9 @@
 from fastapi import FastAPI
 from pydantic import BaseModel
 from sqlalchemy import create_engine, Column, Integer, String
-from sqlalchemy.orm import DeclarativeBase
+from sqlalchemy.orm import DeclarativeBase, Session
 from sqlalchemy.orm import sessionmaker
+from fastapi import Depends
 
 class Base(DeclarativeBase):
     pass
@@ -30,9 +31,16 @@ class TaskCreate(BaseModel):
 #app starts here
 app = FastAPI()
 
+def get_db():
+    db = SessionLocal()
+    try:
+        yield db
+    finally:
+        db.close()
+
 #your routes
 @app.post("/tasks")
-def create_task(task: TaskCreate):
+def create_task(task: TaskCreate, db: Session = Depends(get_db)):
     db = SessionLocal()
     try:
         new_task = TaskDB(
@@ -50,7 +58,7 @@ def create_task(task: TaskCreate):
         db.close()
 
 @app.get("/tasks")
-def get_tasks():
+def get_tasks(db: Session = Depends(get_db)):
     db = SessionLocal()
     # tasks = db.query(TaskDB).all()
     # return tasks
