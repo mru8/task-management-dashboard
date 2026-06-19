@@ -3,7 +3,7 @@ from pydantic import BaseModel
 from sqlalchemy import create_engine, Column, Integer, String
 from sqlalchemy.orm import DeclarativeBase, Session
 from sqlalchemy.orm import sessionmaker
-from fastapi import Depends
+from fastapi import Depends, HTTPException
 
 class Base(DeclarativeBase):
     pass
@@ -65,3 +65,10 @@ def get_tasks(db: Session = Depends(get_db)):
         return tasks
     finally:
         db.close()
+
+@app.get("/tasks/{task_id}")
+def get_task(task_id: int, db: Session = Depends(get_db)):
+    task = db.query(TaskDB).filter(TaskDB.id == task_id).first()
+    if not task:
+        raise HTTPException(status_code=404, detail="Task not found")
+    return task
