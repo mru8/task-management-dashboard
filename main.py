@@ -49,7 +49,8 @@ def create_task(task: TaskCreate, db: Session = Depends(get_db)):
         )
         db.add(new_task)
         db.commit()
-        return {"message": "Task created successfully"}
+        db.refresh(new_task)
+        return new_task
     except Exception:
         db.rollback()
         raise
