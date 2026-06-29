@@ -27,7 +27,6 @@ class TaskCreate(BaseModel):
     title: str
     description: str
     priority: str
-    model_config = {"from_attributes": True}
 
 #app starts here
 app = FastAPI()
