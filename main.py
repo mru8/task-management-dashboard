@@ -38,8 +38,7 @@ def get_db():
     finally:
         db.close()
 
-#your routes
-@app.post("/tasks")
+@app.post("/tasks", response_model=TaskResponse)
 def create_task(task: TaskCreate, db: Session = Depends(get_db)):
     try:
         new_task = TaskDB(
@@ -55,11 +54,11 @@ def create_task(task: TaskCreate, db: Session = Depends(get_db)):
         db.rollback()
         raise
 
-@app.get("/tasks")
+@app.get("/tasks", response_model=list[TaskResponse])
 def get_tasks(db: Session = Depends(get_db)):
     return db.query(TaskDB).all()
 
-@app.get("/tasks/{task_id}")
+@app.get("/tasks/{task_id}", response_model=TaskResponse)
 def get_task(task_id: int, db: Session = Depends(get_db)):
     task = db.query(TaskDB).filter(TaskDB.id == task_id).first()
     if not task:
