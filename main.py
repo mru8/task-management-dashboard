@@ -4,6 +4,12 @@ from sqlalchemy import create_engine, Column, Integer, String
 from sqlalchemy.orm import DeclarativeBase, Session
 from sqlalchemy.orm import sessionmaker
 from fastapi import Depends, HTTPException
+from enum import Enum
+
+class Priority(str, Enum):
+    low = "low"
+    medium = "medium"
+    high = "high"
 
 class Base(DeclarativeBase):
     pass
@@ -25,7 +31,7 @@ Base.metadata.create_all(bind=engine)
 class TaskCreate(BaseModel):
     title: str
     description: str
-    priority: str
+    priority: Priority
 
 class TaskResponse(BaseModel):
     id: int
