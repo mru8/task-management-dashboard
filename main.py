@@ -20,15 +20,20 @@ class TaskDB(Base):
     description = Column(String, index=True)
     priority = Column(String, index=True)
 
-Base.metadata.create_all(bind=engine) #actually creates the table in the database
+Base.metadata.create_all(bind=engine) 
 
-#pydantic schema - validates incoming data
 class TaskCreate(BaseModel):
     title: str
     description: str
     priority: str
 
-#app starts here
+class TaskResponse(BaseModel):
+    id: int
+    title: str
+    description:str
+    priority: str
+    model_config = {"from_attributes": True}
+
 app = FastAPI()
 
 def get_db():
@@ -65,7 +70,7 @@ def get_task(task_id: int, db: Session = Depends(get_db)):
         raise HTTPException(status_code=404, detail="Task not found")
     return task
 
-@app.put("/tasks/{task_id}")
+@app.put("/tasks/{task_id}", response_model=TaskResponse)
 def update_task(task_id: int, task: TaskCreate, db: Session = Depends(get_db)):
     existing_task = db.query(TaskDB).filter(TaskDB.id == task_id).first()
     if not existing_task:
@@ -74,7 +79,8 @@ def update_task(task_id: int, task: TaskCreate, db: Session = Depends(get_db)):
     existing_task.description = task.description
     existing_task.priority = task.priority
     db.commit()
-    return {"message":"Task updated successfully"}
+    db.refresh(existing_task)
+    return existing_task
 
 @app.delete("/tasks/{task_id}")
 def delete_task(task_id:int, db: Session = Depends(get_db)):
